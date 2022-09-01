@@ -25,25 +25,48 @@ class _VideoAppState extends State<VideoApp> {
   int currPlayIndex = 0;
 
   @override
-  void initState() {
+  Future<void> initState() async {
     super.initState();
-    _controller = VideoPlayerController.network(srcs[currPlayIndex])
-    ..initialize().then((_) {
+    _controller = VideoPlayerController.network(srcs[currPlayIndex]);
+    await Future.wait([
+      _controller.initialize(),
+    ]);
     setState(() {});
-    });
+  }
+
+  Future<void> nextVideo() async {
+    await _controller.pause();
+    currPlayIndex += 1;
+    if (currPlayIndex >= srcs.length) {
+      currPlayIndex = 0;
+    }
+    await initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    Stack(
+      children: <Widget>[
+        Align(
+          alignment: Alignment.center,
+          child: FloatingActionButton(
+            onPressed: () {
+              nextVideo();
+            },
+            child: Icon(Icons.skip_next),
+          ),
+        )
+      ],
+    );
     return MaterialApp(
       title: 'Video Demo',
       home: Scaffold(
         body: Center(
           child: _controller.value.isInitialized
               ? AspectRatio(
-            aspectRatio: _controller.value.aspectRatio,
-            child: VideoPlayer(_controller),
-          )
+                  aspectRatio: _controller.value.aspectRatio,
+                  child: VideoPlayer(_controller),
+                )
               : Container(),
         ),
         floatingActionButton: FloatingActionButton(
