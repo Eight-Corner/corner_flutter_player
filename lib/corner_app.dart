@@ -25,13 +25,33 @@ class _VideoAppState extends State<VideoApp> {
   int currPlayIndex = 0;
 
   @override
-  Future<void> initState() async {
+  void initState() {
     super.initState();
     _controller = VideoPlayerController.network(srcs[currPlayIndex]);
-    await Future.wait([
+    Future.wait([
       _controller.initialize(),
     ]);
+    controllerSetup();
+
     setState(() {});
+  }
+
+  // 비디오 컨트롤러 옵션
+  void controllerSetup() {
+    // _controller =
+    // _controller = VideoPlayerOptions(
+    //   videoPlayController: _controller,
+    //
+    // ),
+    VideoProgressIndicator(
+      _controller,
+      allowScrubbing: true,
+      colors: VideoProgressColors(
+        playedColor: Colors.red,
+        bufferedColor: Colors.black45,
+        backgroundColor: Colors.grey,
+      ),
+    );
   }
 
   Future<void> nextVideo() async {
@@ -40,7 +60,7 @@ class _VideoAppState extends State<VideoApp> {
     if (currPlayIndex >= srcs.length) {
       currPlayIndex = 0;
     }
-    await initState();
+    initState();
   }
 
   @override
@@ -61,6 +81,7 @@ class _VideoAppState extends State<VideoApp> {
     return MaterialApp(
       title: 'Video Demo',
       home: Scaffold(
+        appBar: AppBar(toolbarHeight: 0, backgroundColor: Colors.black),
         body: Center(
           child: _controller.value.isInitialized
               ? AspectRatio(
