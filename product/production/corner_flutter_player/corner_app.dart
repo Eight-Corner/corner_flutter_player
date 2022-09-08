@@ -9,10 +9,10 @@ class VideoApp extends StatefulWidget {
   _VideoAppState createState() => _VideoAppState();
 }
 
-int currentPlayIndex = 0;
 
 class _VideoAppState extends State<VideoApp> {
   late VideoPlayerController _controller;
+  int currentPlayIndex = 0;
 
   /*List<String> srcs = [
     "https://res.cloudinary.com/dtdnarsy1/video/upload/v1661926846/videoplayback_lrigan.mp4",
@@ -30,23 +30,24 @@ class _VideoAppState extends State<VideoApp> {
     "https://res.cloudinary.com/dtdnarsy1/video/upload/v1661918923/instagram_video_kjgarl.mp4",
   ];
 
-  @override
-  void initState() {
-    super.initState();
+  Future<void> initPlayer() async {
 
     _controller = VideoPlayerController.network(srcs[currentPlayIndex]);
-    controllerSetup();
-
-    Future.wait([
+    await Future.wait([
       _controller.initialize(),
     ]);
+    controllerSetup();
+    setState(() {});
+  }
 
-    _controller.play();
-
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   // 비디오 컨트롤러 옵션
-  controllerSetup() {
+  void controllerSetup() {
     VideoProgressIndicator(
       _controller,
       allowScrubbing: true,
@@ -58,9 +59,9 @@ class _VideoAppState extends State<VideoApp> {
     );
   }
 
-  _nextVideo() {
+  Future<void> _nextVideo() async {
     if (_controller.value.isPlaying) {
-      _controller.pause();
+      await _controller.pause();
     }
     print('srcs.length: ${srcs.length}');
     print('currentPlayIndex: $currentPlayIndex');
@@ -71,14 +72,14 @@ class _VideoAppState extends State<VideoApp> {
     if (currentPlayIndex > srcs.length) {
       currentPlayIndex = 0;
     }
-    initState();
+    await initPlayer();
 
-    _controller.play();
+    await _controller.play();
   }
 
-  _previousVideo() {
+  Future<void> _previousVideo() async {
     if (_controller.value.isPlaying) {
-      _controller.pause();
+      await _controller.pause();
     }
 
     currentPlayIndex--;
@@ -86,9 +87,9 @@ class _VideoAppState extends State<VideoApp> {
     if (currentPlayIndex < 0) {
       currentPlayIndex = srcs.length - 1;
     }
-    initState();
+    await initPlayer();
 
-    _controller.play();
+    await _controller.play();
   }
 
   @override
@@ -145,9 +146,4 @@ class _VideoAppState extends State<VideoApp> {
     );
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-    _controller.dispose();
-  }
 }
