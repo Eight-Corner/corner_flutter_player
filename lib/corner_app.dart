@@ -63,6 +63,15 @@ class _VideoAppState extends State<VideoApp> {
     initState();
   }
 
+  Future<void> previousVideo() async {
+    await _controller.pause();
+    currPlayIndex -= 1;
+    if (currPlayIndex < 0) {
+      currPlayIndex = srcs.length - 1;
+    }
+    initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     Stack(
@@ -75,7 +84,31 @@ class _VideoAppState extends State<VideoApp> {
             },
             child: Icon(Icons.skip_next),
           ),
-        )
+        ),
+        Align(
+          alignment: Alignment.center,
+          child: FloatingActionButton(
+            onPressed: () {
+              setState(() {
+                _controller.value.isPlaying
+                    ? _controller.pause()
+                    : _controller.play();
+              });
+            },
+            child: Icon(
+              _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
+            ),
+          ),
+        ),
+        Align(
+          alignment: Alignment.center,
+          child: FloatingActionButton(
+            onPressed: () {
+              previousVideo();
+            },
+            child: Icon(Icons.skip_previous),
+          ),
+        ),
       ],
     );
     return MaterialApp(
@@ -90,18 +123,7 @@ class _VideoAppState extends State<VideoApp> {
                 )
               : Container(),
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            setState(() {
-              _controller.value.isPlaying
-                  ? _controller.pause()
-                  : _controller.play();
-            });
-          },
-          child: Icon(
-            _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
-          ),
-        ),
+
       ),
     );
   }
