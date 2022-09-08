@@ -9,6 +9,8 @@ class VideoApp extends StatefulWidget {
   _VideoAppState createState() => _VideoAppState();
 }
 
+int currentPlayIndex = 0;
+
 class _VideoAppState extends State<VideoApp> {
   late VideoPlayerController _controller;
 
@@ -23,34 +25,28 @@ class _VideoAppState extends State<VideoApp> {
     "https://assets.mixkit.co/videos/preview/mixkit-a-girl-blowing-a-bubble-gum-at-an-amusement-park-1226-large.mp4"
   ];*/
   List<String> srcs = [
-    'https://tbfmxuynnmxj8335367.cdn.ntruss.com/hls/m5YUQv389Mra9Mb4ix0nbw__/vodEnd/94000/eatalk-vod-abr/JvO9YH0h36527397_720p2.mp4/index.m3u8',
-    'https://tbfmxuynnmxj8335367.cdn.ntruss.com/hls/m5YUQv389Mra9Mb4ix0nbw__/vodEnd/72000/eatalk-vod-abr/YoXHKIAI19748917_720p2.mp4/index.m3u8'
+    "https://tbfmxuynnmxj8335367.cdn.ntruss.com/hls/m5YUQv389Mra9Mb4ix0nbw__/vodEnd/94000/eatalk-vod-abr/JvO9YH0h36527397_720p2.mp4/index.m3u8",
+    "https://tbfmxuynnmxj8335367.cdn.ntruss.com/hls/m5YUQv389Mra9Mb4ix0nbw__/vodEnd/72000/eatalk-vod-abr/YoXHKIAI19748917_720p2.mp4/index.m3u8",
+    "https://res.cloudinary.com/dtdnarsy1/video/upload/v1661918923/instagram_video_kjgarl.mp4",
   ];
-  int currPlayIndex = 0;
 
   @override
-  void initState() async {
-
+  void initState() {
     super.initState();
 
-    _controller = VideoPlayerController.network(srcs[currPlayIndex]);
+    _controller = VideoPlayerController.network(srcs[currentPlayIndex]);
+    controllerSetup();
 
     Future.wait([
       _controller.initialize(),
     ]);
 
-    controllerSetup();
-    
-    setState(() {});
+    _controller.play();
+
   }
 
   // 비디오 컨트롤러 옵션
-  void controllerSetup() {
-    // _controller =
-    // _controller = VideoPlayerOptions(
-    //   videoPlayController: _controller,
-    //
-    // ),
+  controllerSetup() {
     VideoProgressIndicator(
       _controller,
       allowScrubbing: true,
@@ -62,32 +58,43 @@ class _VideoAppState extends State<VideoApp> {
     );
   }
 
-  Future<void> nextVideo() async {
-    await _controller.pause();
-
-    currPlayIndex += 1;
-    if (currPlayIndex >= srcs.length) {
-      currPlayIndex = 0;
+  _nextVideo() {
+    if (_controller.value.isPlaying) {
+      _controller.pause();
     }
-    await _controller.play();
+    print('srcs.length: ${srcs.length}');
+    print('currentPlayIndex: $currentPlayIndex');
+    print('--- ${currentPlayIndex > srcs.length}');
+
+    currentPlayIndex++;
+
+    if (currentPlayIndex > srcs.length) {
+      currentPlayIndex = 0;
+    }
+    initState();
+
+    _controller.play();
   }
 
-  Future<void> previousVideo() async {
-    await _controller.pause();
-
-    currPlayIndex -= 1;
-    if (currPlayIndex < 0) {
-      currPlayIndex = srcs.length - 1;
+  _previousVideo() {
+    if (_controller.value.isPlaying) {
+      _controller.pause();
     }
 
-    await _controller.play();
+    currentPlayIndex--;
+
+    if (currentPlayIndex < 0) {
+      currentPlayIndex = srcs.length - 1;
+    }
+    initState();
+
+    _controller.play();
   }
 
   @override
   Widget build(BuildContext context) {
-
     return MaterialApp(
-      title: 'Video Demo',
+      title: 'VPE Flutter Video Demo',
       home: Scaffold(
         appBar: AppBar(toolbarHeight: 0, backgroundColor: Colors.black),
         body: Center(
@@ -105,7 +112,9 @@ class _VideoAppState extends State<VideoApp> {
             children: <Widget>[
               FloatingActionButton(
                 onPressed: () {
-                  previousVideo();
+                  setState(() {
+                    _previousVideo();
+                  });
                 },
                 child: Icon(Icons.skip_previous),
               ),
@@ -123,14 +132,15 @@ class _VideoAppState extends State<VideoApp> {
               ),
               FloatingActionButton(
                 onPressed: () {
-                  nextVideo();
+                  setState(() {
+                    _nextVideo();
+                  });
                 },
                 child: Icon(Icons.skip_next),
               ),
             ],
           ),
         ),
-
       ),
     );
   }
