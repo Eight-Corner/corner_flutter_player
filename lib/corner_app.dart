@@ -75,7 +75,7 @@ class _VideoAppState extends State<VideoApp> {
 
     currentPlayIndex++;
 
-    if (currentPlayIndex > srcs.length) {
+    if (currentPlayIndex > srcs.length - 1) {
       currentPlayIndex = 0;
     }
     await initPlayer();
