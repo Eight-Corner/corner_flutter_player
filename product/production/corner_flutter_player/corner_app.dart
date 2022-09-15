@@ -13,6 +13,7 @@ class VideoApp extends StatefulWidget {
 class _VideoAppState extends State<VideoApp> {
   late VideoPlayerController _controller;
   int currentPlayIndex = 0;
+  static const allSpeeds = <double>[0.25, 0.5, 1, 1.5, 2, 3, 5, 10]; // 재생 속도
 
   /*List<String> srcs = [
     "https://res.cloudinary.com/dtdnarsy1/video/upload/v1661926846/videoplayback_lrigan.mp4",
@@ -30,6 +31,18 @@ class _VideoAppState extends State<VideoApp> {
     "https://res.cloudinary.com/dtdnarsy1/video/upload/v1661918923/instagram_video_kjgarl.mp4",
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    initPlayer();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   Future<void> initPlayer() async {
 
     _controller = VideoPlayerController.network(srcs[currentPlayIndex]);
@@ -38,12 +51,6 @@ class _VideoAppState extends State<VideoApp> {
     ]);
     controllerSetup();
     setState(() {});
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
   }
 
   // 비디오 컨트롤러 옵션
@@ -69,7 +76,7 @@ class _VideoAppState extends State<VideoApp> {
 
     currentPlayIndex++;
 
-    if (currentPlayIndex > srcs.length) {
+    if (currentPlayIndex > srcs.length - 1) {
       currentPlayIndex = 0;
     }
     await initPlayer();
@@ -145,5 +152,25 @@ class _VideoAppState extends State<VideoApp> {
       ),
     );
   }
+
+  Widget buildSpeed() => Align(
+    alignment: Alignment.topRight,
+    child: PopupMenuButton<double>(
+      initialValue: _controller.value.playbackSpeed,
+      tooltip: 'Playback speed',
+      onSelected: _controller.setPlaybackSpeed,
+      itemBuilder: (context) => allSpeeds
+          .map<PopupMenuEntry<double>>((speed) => PopupMenuItem(
+        value: speed,
+        child: Text('${speed}x'),
+      ))
+          .toList(),
+      child: Container(
+        color: Colors.white38,
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        child: Text('${_controller.value.playbackSpeed}x'),
+      ),
+    ),
+  );
 
 }
